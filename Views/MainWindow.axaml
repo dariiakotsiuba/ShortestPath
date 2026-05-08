@@ -1,0 +1,221 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ShortestPath.ViewModels"
+        xmlns:views="using:ShortestPath.Views"
+        x:Class="ShortestPath.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Shortest Path Solver"
+        Width="1200" Height="800"
+        MinWidth="700" MinHeight="500"
+        Background="#F0EEF6">
+
+  <Window.Resources>
+    <SolidColorBrush x:Key="PanelBg"      Color="#FAF8FF"/>
+    <SolidColorBrush x:Key="AccentPurple" Color="#C9B8E8"/>
+    <SolidColorBrush x:Key="AccentBlue"   Color="#B8D8E8"/>
+    <SolidColorBrush x:Key="AccentGreen"  Color="#B8E8C8"/>
+    <SolidColorBrush x:Key="AccentPink"   Color="#E8B8D0"/>
+    <SolidColorBrush x:Key="MatrixBg"     Color="#F5F0FF"/>
+    <SolidColorBrush x:Key="SplitterBg"   Color="#D8D0F0"/>
+    <SolidColorBrush x:Key="StatusBg"     Color="#EDE8FA"/>
+    <SolidColorBrush x:Key="TextMain"     Color="#3D3557"/>
+    <SolidColorBrush x:Key="TextSub"      Color="#7B6FA0"/>
+  </Window.Resources>
+
+  <Grid RowDefinitions="*,Auto">
+
+    <Grid Grid.Row="0" ColumnDefinitions="390,5,*">
+
+      <!-- ══ LEFT PANEL ══ -->
+      <Border Grid.Column="0" Background="{StaticResource PanelBg}"
+              BoxShadow="2 0 12 0 #1A000000">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="16">
+          <StackPanel Spacing="12" MinWidth="300">
+
+            <!-- Title -->
+            <StackPanel Spacing="2">
+              <TextBlock Text="Shortest Path Solver"
+                         FontSize="18" FontWeight="Bold"
+                         Foreground="{StaticResource TextMain}"/>
+              <TextBlock Text="Visualize graph algorithms interactively"
+                         FontSize="11" Foreground="{StaticResource TextSub}"/>
+            </StackPanel>
+
+            <Rectangle Height="2" Fill="{StaticResource AccentPurple}" RadiusX="1" RadiusY="1"/>
+
+            <!-- Node count -->
+            <Border Background="#EDE8FA" CornerRadius="8" Padding="12,10">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Number of nodes (2–20)"
+                           FontWeight="SemiBold" FontSize="12"
+                           Foreground="{StaticResource TextMain}"/>
+                <NumericUpDown Value="{Binding NodeCount}" Minimum="2" Maximum="20"
+                               Width="120" FormatString="0"/>
+              </StackPanel>
+            </Border>
+
+            <!-- Matrix -->
+            <Border Background="{StaticResource MatrixBg}" CornerRadius="8" Padding="12,10">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Adjacency Matrix"
+                           FontWeight="SemiBold" FontSize="12"
+                           Foreground="{StaticResource TextMain}"/>
+                <TextBlock Text="Empty = no edge (∞)  ·  Diagonal = 0"
+                           FontSize="10" Foreground="{StaticResource TextSub}"/>
+                <Border BorderBrush="#D0C8F0" BorderThickness="1"
+                        CornerRadius="6" Padding="6" Background="#FDFCFF">
+                  <ItemsControl ItemsSource="{Binding MatrixRows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:MatrixRow">
+                        <StackPanel Orientation="Horizontal" Spacing="3" Margin="0,2">
+                          <Border Width="20" Height="28" Background="#E8E0FA"
+                                  CornerRadius="4" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding RowIndex}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold" FontSize="11"
+                                       Foreground="#6B5B9A"/>
+                          </Border>
+                          <ItemsControl ItemsSource="{Binding Cells}">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="3"/>
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="vm:MatrixCell">
+                                <TextBox Text="{Binding Value}"
+                                         Width="44" Height="28"
+                                         FontSize="12" TextAlignment="Center"
+                                         Padding="2,0"
+                                         VerticalContentAlignment="Center"
+                                         Background="#F5F0FF"
+                                         BorderBrush="#C8B8F0"
+                                         CornerRadius="4"/>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Rectangle Height="2" Fill="{StaticResource AccentBlue}" RadiusX="1" RadiusY="1"/>
+
+            <!-- Algorithm -->
+            <Border Background="#EAF4FB" CornerRadius="8" Padding="12,10">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Algorithm"
+                           FontWeight="SemiBold" FontSize="12"
+                           Foreground="{StaticResource TextMain}"/>
+                <ComboBox ItemsSource="{Binding Algorithms}"
+                          SelectedItem="{Binding SelectedAlgorithm}"
+                          HorizontalAlignment="Stretch">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextMain}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="{Binding SelectedAlgorithm.Description}"
+                           FontSize="10" Foreground="{StaticResource TextSub}"
+                           TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+
+            <!-- Source / Target -->
+            <Border Background="#EAF6EE" CornerRadius="8" Padding="12,10">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Nodes"
+                           FontWeight="SemiBold" FontSize="12"
+                           Foreground="{StaticResource TextMain}"/>
+                <Grid ColumnDefinitions="*,16,*">
+                  <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Source" FontSize="11"
+                               Foreground="{StaticResource TextSub}"/>
+                    <NumericUpDown Value="{Binding SourceNode}"
+                                   Minimum="0" Maximum="19"
+                                   FormatString="0"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" Text="→"
+                             VerticalAlignment="Bottom" Margin="0,0,0,6"
+                             FontSize="16" Foreground="{StaticResource AccentPurple}"/>
+                  <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Text="Target" FontSize="11"
+                               Foreground="{StaticResource TextSub}"/>
+                    <NumericUpDown Value="{Binding TargetNode}"
+                                   Minimum="0" Maximum="19"
+                                   FormatString="0"/>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Buttons -->
+            <Button Content="▶   Find Shortest Path"
+                    Command="{Binding RunCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Padding="0,12" FontSize="14" FontWeight="SemiBold"
+                    Background="#B8D8E8" Foreground="#2A4A5A"
+                    CornerRadius="8"/>
+
+            <Button Content="💾   Save Results to File"
+                    Command="{Binding SaveCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Padding="0,10" FontSize="13"
+                    Background="#D8C8F0" Foreground="#3D2A6A"
+                    CornerRadius="8"/>
+
+            <!-- Status -->
+            <Border Background="{StaticResource StatusBg}"
+                    BorderBrush="{StaticResource AccentPurple}"
+                    BorderThickness="1" CornerRadius="8" Padding="12,10">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Status" FontWeight="Bold" FontSize="11"
+                           Foreground="{StaticResource TextSub}"/>
+                <TextBlock Text="{Binding StatusMessage}"
+                           TextWrapping="Wrap" FontSize="12"
+                           Foreground="{StaticResource TextMain}"/>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <!-- ══ SPLITTER ══ -->
+      <GridSplitter Grid.Column="1"
+                    ResizeDirection="Columns"
+                    Background="{StaticResource SplitterBg}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"/>
+
+      <!-- ══ RIGHT PANEL — Graph ══ -->
+      <Border Grid.Column="2" Background="#FDFBFF">
+        <views:GraphCanvas Graph="{Binding CurrentGraph}"
+                           Result="{Binding Result}"
+                           SourceNode="{Binding SourceNode}"
+                           TargetNode="{Binding TargetNode}"/>
+      </Border>
+
+    </Grid>
+
+    <!-- ══ STATUS BAR ══ -->
+    <Border Grid.Row="1" Background="#E8E0FA" Padding="16,7">
+      <StackPanel Spacing="1">
+        <TextBlock Text="{Binding StatusMessage}"
+                   FontSize="12" Foreground="{StaticResource TextMain}"/>
+        <TextBlock Text="{Binding ComplexityInfo}"
+                   FontSize="11" Foreground="{StaticResource TextSub}"/>
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</Window>
